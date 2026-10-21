@@ -1,0 +1,13 @@
+slotting,batching,distance_m,dist_per_order_m,labour_h,makespan_h,avg_fill,saving_vs_baseline_%
+affinity,fcfs,10151.36,33.84,6.79,1.75,0.93,24.57
+affinity,savings,5491.76,18.31,5.45,1.39,0.97,59.19
+affinity,savings+ls,5467.12,18.22,5.45,1.39,0.97,59.38
+popularity,fcfs,10475.84,34.92,6.88,1.77,0.93,22.16
+popularity,savings,5918.16,19.73,5.57,1.43,0.97,56.02
+popularity,savings+ls,5861.84,19.54,5.55,1.43,0.97,56.44
+popularity_aisle,fcfs,10190.96,33.97,6.8,1.75,0.93,24.27
+popularity_aisle,savings,5548.56,18.5,5.46,1.39,0.97,58.77
+popularity_aisle,savings+ls,5525.44,18.42,5.46,1.39,0.97,58.94
+random,fcfs,13457.6,44.86,7.71,1.98,0.93,0.0
+random,savings,8802.56,29.34,6.36,1.62,0.98,34.59
+random,savings+ls,8755.6,29.19,6.35,1.62,0.98,34.94

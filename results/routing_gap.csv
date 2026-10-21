@@ -1,0 +1,3 @@
+scenario,sshape_m,tsp_m,sshape_over_tsp_pct
+Baseline: random + FCFS,13756,11725,17.3
+PickFlow: affinity + savings+LS,5414,5257,3.0
