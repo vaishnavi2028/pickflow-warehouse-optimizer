@@ -43,10 +43,12 @@ Total picker travel for 300 orders (S-shape routing), mean of 5 seeds:
 - Affinity-aware slotting adds only a small gain over simple aisle-based popularity slotting here
   (~1 pp). Most of the slotting value comes from concentrating hot SKUs in few aisles. Affinity
   matters more when demand is flatter or families are tighter (tunable in `data.py`).
-- Swapping the S-shape heuristic for a near-optimal TSP tour cuts the final plan further:
-  S-shape is **17.3% longer** than TSP on the random layout but only **3.0%** longer on the
-  optimised layout (slotting makes simple routing nearly optimal). Full pipeline vs baseline with
-  TSP routing: **-55.2%** (11,725 m to 5,257 m).
+- **TSP re-routing check (mean of 5 seeds).** Batches are built using the fast S-shape cost; each
+  batch is then re-routed with a near-optimal OR-Tools TSP solve to see how much the simple rule
+  loses. S-shape is **16.9% longer** than TSP on the random layout but only **3.9%** longer on
+  the optimised layout, so good slotting makes the simple routing rule nearly optimal. With TSP
+  routing for both sides, the full pipeline vs baseline is **-54.6%** (11,579 m to 5,253 m;
+  sd 1.7 pp, range 52.6% to 56.6% across seeds).
 - Savings grow with larger carts: affinity + savings travels 18.6 m/order at 45 items vs 29.7 m for
   random + savings (see `results/fig2_capacity.png`).
 
@@ -60,7 +62,7 @@ Total picker travel for 300 orders (S-shape routing), mean of 5 seeds:
 ```bash
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python run_experiments.py          # ~1 min; writes tables and figures to results/
+python run_experiments.py          # ~2 min; writes tables and figures to results/
 ```
 
 ## Structure
@@ -81,6 +83,8 @@ pickflow/
 
 ## Limitations and honest caveats
 
+- Batching is optimised against the S-shape cost (instant to evaluate); TSP is used afterwards
+  as a re-routing benchmark. It is not integrated into the batching search.
 - Demand is synthetic. The structure (Zipf + affinity) mirrors published warehouse findings, but
   absolute numbers will differ on real order data. The pipeline accepts any `(skus, qty)` order list.
 - Batching is heuristic (no optimality bound). A CP-SAT/MILP benchmark on small instances would

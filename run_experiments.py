@@ -78,25 +78,35 @@ ax.set_xlabel("Cart capacity (items)"); ax.set_ylabel("Travel per order (m)")
 ax.set_title("Sensitivity to cart capacity"); ax.legend(fontsize=8); ax.grid(alpha=.3)
 fig.tight_layout(); fig.savefig(OUT / "fig2_capacity.png", dpi=150); plt.close(fig)
 
-# 3) S-shape vs near-optimal TSP routing, and route plots (seed 0) -----------------------------
-rng, hist, orders = instance(0)
+# 3) S-shape vs near-optimal TSP re-routing, all 5 seeds -------------------------------------
+# Batches are built with the fast S-shape cost, then each batch is re-routed with an OR-Tools TSP
+# solve to measure how much the simple routing rule loses. (Seed 0 is also used for the figures.)
 cases = {"Baseline: random + FCFS": ("random", "fcfs"), "PickFlow: affinity + savings+LS": ("affinity", "savings+ls")}
 gap_rows, picks, routes_store = [], {}, {}
-for name, (s, b) in cases.items():
-    a = build_assignment(s, wh, hist, N_SKUS, np.random.default_rng(0))
-    batches, A, q = make_batches(b, orders, a, wh, CAP)
-    ev = evaluate(batches, A, q, wh, CAP)
-    tsp_d, routes = tsp_total(batches, orders, a, wh)
-    gap_rows.append(dict(scenario=name, sshape_m=round(ev["distance_m"]), tsp_m=round(tsp_d),
-                         sshape_over_tsp_pct=round(100 * (ev["distance_m"] / tsp_d - 1), 1)))
-    routes_store[name] = (routes, batches, a)
-    cnt = np.zeros(wh.n_locs)
-    for sk, qt in (o for o in orders):
-        np.add.at(cnt, a[sk], 1)
-    picks[name] = cnt
-gap = pd.DataFrame(gap_rows); gap.to_csv(OUT / "routing_gap.csv", index=False); print(gap.to_string(index=False))
-tot_base, tot_pf = gap.tsp_m.iloc[0], gap.tsp_m.iloc[1]
-print(f"End-to-end saving (TSP routing): {100 * (1 - tot_pf / tot_base):.1f}%")
+for seed in SEEDS:
+    rng, hist, orders = instance(seed)
+    for name, (s, b) in cases.items():
+        a = build_assignment(s, wh, hist, N_SKUS, np.random.default_rng(seed))
+        batches, A, q = make_batches(b, orders, a, wh, CAP)
+        ev = evaluate(batches, A, q, wh, CAP)
+        tsp_d, routes = tsp_total(batches, orders, a, wh)
+        gap_rows.append(dict(seed=seed, scenario=name, sshape_m=ev["distance_m"], tsp_m=tsp_d))
+        if seed == 0:
+            routes_store[name] = (routes, batches, a)
+            cnt = np.zeros(wh.n_locs)
+            for sk, _ in orders:
+                np.add.at(cnt, a[sk], 1)
+            picks[name] = cnt
+    print("tsp seed", seed, "done", flush=True)
+gp = pd.DataFrame(gap_rows); gp.to_csv(OUT / "routing_gap_by_seed.csv", index=False)
+gap = gp.groupby("scenario", sort=False)[["sshape_m", "tsp_m"]].mean()
+gap["sshape_over_tsp_pct"] = 100 * (gap.sshape_m / gap.tsp_m - 1)
+gap = gap.round(1).reset_index(); gap.to_csv(OUT / "routing_gap.csv", index=False)
+print(gap.to_string(index=False))
+piv = gp.pivot(index="seed", columns="scenario", values="tsp_m")
+sv = 100 * (1 - piv["PickFlow: affinity + savings+LS"] / piv["Baseline: random + FCFS"])
+print(f"End-to-end saving with TSP routing: mean {sv.mean():.1f}% (sd {sv.std():.1f}, min {sv.min():.1f}, max {sv.max():.1f})")
+pd.DataFrame({"saving_pct": sv}).to_csv(OUT / "end_to_end_saving_tsp.csv")
 
 # Fig 3: pick-density heatmap on the floor plan
 fig, axes = plt.subplots(1, 2, figsize=(11, 4.6), sharey=True)

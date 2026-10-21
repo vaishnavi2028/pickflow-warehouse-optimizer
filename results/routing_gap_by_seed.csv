@@ -1,0 +1,11 @@
+seed,scenario,sshape_m,tsp_m
+0,Baseline: random + FCFS,13756.0,11724.800000000005
+0,PickFlow: affinity + savings+LS,5414.4,5258.4
+1,Baseline: random + FCFS,13840.399999999998,12059.599999999997
+1,PickFlow: affinity + savings+LS,5560.799999999999,5344.800000000001
+2,Baseline: random + FCFS,13930.8,11670.000000000002
+2,PickFlow: affinity + savings+LS,5834.4,5530.0
+3,Baseline: random + FCFS,12904.8,11016.400000000001
+3,PickFlow: affinity + savings+LS,4931.2,4777.200000000001
+4,Baseline: random + FCFS,13271.2,11422.400000000001
+4,PickFlow: affinity + savings+LS,5545.599999999999,5354.400000000001
