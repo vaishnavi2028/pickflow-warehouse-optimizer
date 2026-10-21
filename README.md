@@ -81,7 +81,7 @@ pickflow/
 └── results/                # CSV tables + PNG figures
 ```
 
-## Limitations and honest caveats
+## Limitations
 
 - Batching is optimised against the S-shape cost (instant to evaluate); TSP is used afterwards
   as a re-routing benchmark. It is not integrated into the batching search.
